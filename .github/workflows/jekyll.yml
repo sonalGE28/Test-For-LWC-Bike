@@ -1,0 +1,33 @@
+name: Jekyll site CI
+
+on:
+
+  pull_request:
+    branches: [ master ]
+
+# Jobs to be executed
+jobs:
+    build-deploy:
+        runs-on: ubuntu-latest
+        steps:
+
+            # Checkout the code in the pull request
+            - name: 'Checkout source code'
+              uses: actions/checkout@v2
+              with:
+                ref: ${{ github.event.client_payload.ref }}
+
+            - name: 'Build and Deploy'
+              uses: tiagonnascimento/sfdx-orgdev-build-deploy@v1.1
+              with:
+                type: 'Production'
+                certificate_path: devops/server.key.enc
+                decryption_key: ${{ secrets.DECRYPTION_KEY_NON_PRODUCTIVE }}
+                decryption_iv: ${{ secrets.DECRYPTION_IV_NON_PRODUCTIVE }}
+                client_id: ${{ secrets.CONSUMER_KEY_TH01 }}
+                username: ${{ secrets.USERNAME_TH01 }}
+                checkonly: false
+                pre_manifest_path: manifest/package-preDeploy.xml
+                destructive_path: destructive
+                manifest_path: manifest/package-baseDeploy.xml
+                data_factory: scripts/apex/CreateBaseData.apex
